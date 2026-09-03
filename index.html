@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDD vs SSD — cómo se guardan los datos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #eef1f3;
+    --bg-panel: #ffffff;
+    --ink: #14181c;
+    --ink-soft: #5a636b;
+    --line: #cbd1d6;
+    --hdd: #c97b3d;
+    --hdd-soft: #f1ddc8;
+    --ssd: #1f8f8f;
+    --ssd-soft: #cdeaea;
+    --stale: #c65b5b;
+    --stale-soft: #f6dcdc;
+    --free: #d7dbde;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.55;
+  }
+
+  h1, h2, h3{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .mono{ font-family: 'IBM Plex Mono', monospace; }
+
+  .wrap{
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    padding: 28px 0 0;
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap{
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .wordmark{ font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; }
+  .wordmark span{ color: var(--hdd); }
+  .wordmark b{ color: var(--ssd); font-weight: 600; }
+  header .tag{ font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); }
+
+  /* ---------- hero ---------- */
+  .hero{ padding: 64px 0 48px; }
+  .hero h1{ font-size: clamp(32px, 4.6vw, 48px); line-height: 1.1; max-width: 18ch; }
+  .hero p.lede{ max-width: 60ch; margin-top: 18px; font-size: 17.5px; color: var(--ink-soft); }
+
+  /* ---------- sections ---------- */
+  section{ padding: 52px 0; }
+  section.alt{ background: var(--bg-panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .section-head{ max-width: 66ch; margin-bottom: 30px; }
+  .section-head .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    margin-bottom: 8px;
+  }
+  .section-head.hdd .eyebrow{ color: var(--hdd); }
+  .section-head.ssd .eyebrow{ color: var(--ssd); }
+  .section-head h2{ font-size: 26px; }
+  .section-head p{ color: var(--ink-soft); margin-top: 10px; font-size: 15.5px; }
+
+  /* ---------- panel shell ---------- */
+  .panel{
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg-panel);
+    padding: 24px;
+  }
+  .device-grid{
+    display:grid;
+    grid-template-columns: minmax(260px, 340px) 1fr;
+    gap: 28px;
+    align-items:start;
+  }
+  @media (max-width: 760px){
+    .device-grid{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- controls ---------- */
+  .control-group{
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .control-group .label{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .counter{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .counter button{
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .counter button:hover{ background: #e2e6ea; }
+  .counter .val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 15px;
+    min-width: 42px;
+    text-align:center;
+  }
+  .action-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+    color: #fff;
+    margin-top: 8px;
+  }
+  .action-btn:disabled{ opacity: .4; cursor: not-allowed; }
+  .action-btn.hdd{ background: var(--hdd); }
+  .action-btn.ssd{ background: var(--ssd); }
+  .action-btn.ghost{
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+  }
+
+  .readout-box{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 4px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    min-height: 18px;
+  }
+  .status-line{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 14px;
+    min-height: 16px;
+  }
+
+  /* ---------- HDD platter ---------- */
+  .platter-wrap{
+    display:flex;
+    justify-content:center;
+    padding: 8px 0 4px;
+  }
+  .platter{
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, #cfd4d8 0%, #b9bfc5 62%, #a7adb3 100%);
+    border: 1px solid var(--line);
+  }
+  .platter .hub{
+    position:absolute;
+    top:50%; left:50%;
+    width: 26px; height: 26px;
+    margin: -13px 0 0 -13px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+  .platterDisk{
+    position:absolute;
+    inset: 0;
+    border-radius: 50%;
+    transform-origin: 50% 50%;
+    transform: rotate(0deg);
+    transition: transform .7s cubic-bezier(.4,0,.2,1);
+  }
+  .head{
+    position:absolute;
+    top: -2px;
+    left: 50%;
+    width: 0;
+    height: 0;
+    margin-left: -9px;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 18px solid var(--ink);
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.3));
+    z-index: 3;
+  }
+  .head-label{
+    position:absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .sector{
+    position:absolute;
+    width: 38px; height: 38px;
+    margin: -19px 0 0 -19px;
+    border-radius: 100px;
+    background: var(--free);
+    border: 1px solid #b4bac0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    transform: rotate(calc(var(--disk-rotation, 0deg) * -1));
+    transition: background .3s, transform .7s cubic-bezier(.4,0,.2,1), box-shadow .2s;
+  }
+  .sector.filled{
+    background: var(--hdd-soft);
+    color: #7a4a1f;
+    border-color: var(--hdd);
+  }
+  .sector.flash{
+    box-shadow: 0 0 0 4px rgba(201,123,61,.35);
+    transform: rotate(calc(var(--disk-rotation, 0deg) * -1)) scale(1.12);
+  }
+
+  /* ---------- SSD blocks ---------- */
+  .blocks{
+    display:flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .block{
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .block .block-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .pages{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .page{
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--free);
+    border: 1px solid #b4bac0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    position: relative;
+    transition: background .3s, transform .2s, box-shadow .2s;
+  }
+  .page .slot-tag{
+    font-size: 8.5px;
+    opacity: .75;
+  }
+  .page.valid{
+    background: var(--ssd-soft);
+    color: #0f5c5c;
+    border-color: var(--ssd);
+  }
+  .page.stale{
+    background: var(--stale-soft);
+    color: #8a3a3a;
+    border-color: var(--stale);
+    text-decoration: line-through;
+  }
+  .page.flash{
+    box-shadow: 0 0 0 4px rgba(31,143,143,.3);
+    transform: scale(1.08);
+  }
+
+  .legend{
+    display:flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 14px;
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .swatch{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+
+  .ftl-panel{ margin-top: 18px; }
+  .ftl-panel .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .ftl-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .ftl-table th, .ftl-table td{
+    padding: 7px 10px;
+    text-align:center;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+  .ftl-table th:last-child, .ftl-table td:last-child{ border-right:none; }
+  .ftl-table tr:last-child td{ border-bottom:none; }
+  .ftl-table th{
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-weight: 500;
+    font-size: 11px;
+  }
+  .ftl-table td.empty{ color: var(--ink-soft); opacity: .6; }
+  .ftl-table td.mapped{ color: #0f5c5c; font-weight: 600; }
+
+  /* ---------- comparison ---------- */
+  .compare-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+  .compare-table th, .compare-table td{
+    text-align:left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .compare-table th{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .compare-table td.hdd-col{ border-left: 3px solid var(--hdd); }
+  .compare-table td.ssd-col{ border-left: 3px solid var(--ssd); }
+
+  /* ---------- footer ---------- */
+  footer{ padding: 40px 0 60px; }
+  footer .wrap{
+    display:flex;
+    justify-content: space-between;
+    align-items:flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  footer p{ color: var(--ink-soft); font-size: 13.5px; max-width: 48ch; }
+  .cta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    border: 1px solid var(--ink);
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-decoration:none;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .cta:hover{ background: var(--ink); color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="wordmark"><span>HDD</span> / <b>SSD</b></div>
+    <div class="tag">informe técnico · cómo se guardan los datos</div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>El mismo dato, dos formas completamente distintas de guardarlo.</h1>
+    <p class="lede">No es solo una cuestión de velocidad. Un HDD y un SSD administran el espacio de maneras opuestas: uno escribe directamente donde vos le decís; el otro nunca reescribe en el mismo lugar y necesita todo un sistema por detrás para no quedarse sin espacio libre. Probalo abajo.</p>
+  </div>
+</section>
+
+<section id="hdd">
+  <div class="wrap">
+    <div class="section-head hdd">
+      <div class="eyebrow">01 — HDD</div>
+      <h2>Direccionamiento directo, sobrescritura en el lugar</h2>
+      <p>Cada dato vive en un sector fijo del plato. Escribir en el sector 5 dos veces significa lo mismo las dos veces: el cabezal se mueve ahí y graba encima de lo que hubiera antes. No hay indirección — la dirección lógica y la física son la misma cosa.</p>
+    </div>
+
+    <div class="panel">
+      <div class="device-grid">
+        <div class="platter-wrap">
+          <div class="platter" id="platter">
+            <div class="platterDisk" id="platterDisk">
+              <div class="hub"></div>
+            </div>
+            <div class="head-label">cabezal</div>
+            <div class="head" id="hddHead"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="control-group">
+            <div class="label">valor a escribir</div>
+            <div class="counter">
+              <button id="hddValMinus">−</button>
+              <span class="val mono" id="hddValDisplay">42</span>
+              <button id="hddValPlus">+</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div class="label">sector destino (0–11)</div>
+            <div class="counter">
+              <button id="hddWSecMinus">−</button>
+              <span class="val mono" id="hddWSecDisplay">03</span>
+              <button id="hddWSecPlus">+</button>
+            </div>
+            <button class="action-btn hdd" id="hddWriteBtn">Escribir en el sector</button>
+          </div>
+
+          <div class="control-group">
+            <div class="label">sector a leer (0–11)</div>
+            <div class="counter">
+              <button id="hddRSecMinus">−</button>
+              <span class="val mono" id="hddRSecDisplay">03</span>
+              <button id="hddRSecPlus">+</button>
+            </div>
+            <button class="action-btn ghost" id="hddReadBtn">Leer sector</button>
+            <div class="readout-box" id="hddReadout">—</div>
+          </div>
+
+          <div class="status-line" id="hddStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="ssd">
+  <div class="wrap">
+    <div class="section-head ssd">
+      <div class="eyebrow">02 — SSD</div>
+      <h2>Escritura fuera de lugar + tabla de traducción</h2>
+      <p>La memoria flash no puede sobrescribir una página sin antes borrar todo el bloque al que pertenece. Entonces, cuando "actualizás" un dato, el SSD en realidad escribe en una página nueva y libre, actualiza una tabla lógico→físico (FTL), y marca la página vieja como basura. Cuando se acumula basura, un <b>garbage collector</b> reubica lo válido y recién ahí borra el bloque entero.</p>
+    </div>
+
+    <div class="panel">
+      <div class="device-grid">
+        <div>
+          <div class="blocks" id="ssdBlocks"></div>
+          <div class="legend">
+            <span><i class="swatch" style="background:var(--free)"></i>libre</span>
+            <span><i class="swatch" style="background:var(--ssd-soft);border:1px solid var(--ssd)"></i>válida</span>
+            <span><i class="swatch" style="background:var(--stale-soft);border:1px solid var(--stale)"></i>basura (stale)</span>
+          </div>
+
+          <div class="ftl-panel">
+            <div class="label">tabla de traducción (FTL) — slot lógico → página física</div>
+            <table class="ftl-table">
+              <thead>
+                <tr><th>slot</th><th>página física</th><th>bloque</th><th>valor</th></tr>
+              </thead>
+              <tbody id="ftlBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="control-group">
+            <div class="label">valor a escribir</div>
+            <div class="counter">
+              <button id="ssdValMinus">−</button>
+              <span class="val mono" id="ssdValDisplay">58</span>
+              <button id="ssdValPlus">+</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div class="label">slot lógico destino (0–5)</div>
+            <div class="counter">
+              <button id="ssdWSlotMinus">−</button>
+              <span class="val mono" id="ssdWSlotDisplay">0</span>
+              <button id="ssdWSlotPlus">+</button>
+            </div>
+            <button class="action-btn ssd" id="ssdWriteBtn">Escribir en el slot</button>
+          </div>
+
+          <div class="control-group">
+            <div class="label">slot lógico a leer (0–5)</div>
+            <div class="counter">
+              <button id="ssdRSlotMinus">−</button>
+              <span class="val mono" id="ssdRSlotDisplay">0</span>
+              <button id="ssdRSlotPlus">+</button>
+            </div>
+            <button class="action-btn ghost" id="ssdReadBtn">Leer slot</button>
+            <div class="readout-box" id="ssdReadout">—</div>
+          </div>
+
+          <button class="action-btn ghost" id="ssdGcBtn" style="width:100%">Reciclar bloque con más basura (garbage collection)</button>
+          <div class="status-line" id="ssdStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="comparacion">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>En resumen</h2>
+      <p>Lo que acabás de mover a mano es, en el fondo, la diferencia estructural entre ambos dispositivos.</p>
+    </div>
+
+    <div class="panel" style="padding:0; overflow:hidden;">
+      <table class="compare-table">
+        <thead>
+          <tr><th></th><th>HDD</th><th>SSD</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Direccionamiento</td>
+            <td class="hdd-col">Directo: la dirección lógica es la posición física (sector).</td>
+            <td class="ssd-col">Indirecto: una tabla (FTL) traduce cada slot lógico a una página física, y esa relación cambia con el tiempo.</td>
+          </tr>
+          <tr>
+            <td>Actualizar un dato</td>
+            <td class="hdd-col">Sobrescribe en el mismo lugar físico.</td>
+            <td class="ssd-col">Escribe en una página nueva y libre; la página vieja queda como basura (stale).</td>
+          </tr>
+          <tr>
+            <td>Unidad de borrado</td>
+            <td class="hdd-col">No aplica — se sobrescribe directamente, sector por sector.</td>
+            <td class="ssd-col">El bloque completo. No se puede borrar una sola página.</td>
+          </tr>
+          <tr>
+            <td>Mantenimiento</td>
+            <td class="hdd-col">Ninguno adicional: cada escritura es autocontenida.</td>
+            <td class="ssd-col">Necesita garbage collection en segundo plano para recuperar bloques llenos de basura.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Esta página acompaña el informe técnico sobre discos HDD y SSD. Reemplazá este párrafo por el resumen o el link a tu informe completo.</p>
+    <a class="cta" href="#">↓ ver informe completo</a>
+  </div>
+</footer>
+
+<script>
+/* =========================================================
+   HDD — plato con 12 sectores, direccionamiento directo
+   ========================================================= */
+(function(){
+  const N_SECTORS = 12;
+  const sectors = new Array(N_SECTORS).fill(null); // valor o null
+
+  let writeVal = 42;
+  let writeSector = 3;
+  let readSector = 3;
+  let diskRotation = 0; // rotación acumulada del plato, en grados
+
+  const platterDisk = document.getElementById('platterDisk');
+  const readout = document.getElementById('hddReadout');
+  const status = document.getElementById('hddStatus');
+
+  const els = [];
+  const CENTER = 150, RADIUS = 118;
+  const STEP = 360 / N_SECTORS;
+
+  // el cabezal está fijo arriba (ángulo -90°). el sector 0 nace ahí mismo.
+  for (let i = 0; i < N_SECTORS; i++){
+    const angle = (i * STEP) - 90;
+    const rad = angle * Math.PI / 180;
+    const x = CENTER + RADIUS * Math.cos(rad);
+    const y = CENTER + RADIUS * Math.sin(rad);
+    const el = document.createElement('div');
+    el.className = 'sector';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    platterDisk.appendChild(el);
+    els.push(el);
+  }
+
+  // gira el plato por el camino más corto para dejar el sector i bajo el cabezal fijo
+  function spinDiskTo(i){
+    const targetMod = ((-i * STEP) % 360 + 360) % 360;
+    const currentMod = ((diskRotation % 360) + 360) % 360;
+    let delta = targetMod - currentMod;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    diskRotation += delta;
+    platterDisk.style.transform = `rotate(${diskRotation}deg)`;
+    platterDisk.style.setProperty('--disk-rotation', `${diskRotation}deg`);
+  }
+
+  function render(){
+    for (let i = 0; i < N_SECTORS; i++){
+      const v = sectors[i];
+      els[i].textContent = v === null ? i.toString().padStart(2,'0') : v;
+      els[i].classList.toggle('filled', v !== null);
+    }
+  }
+
+  function flash(i){
+    els[i].classList.add('flash');
+    setTimeout(() => els[i].classList.remove('flash'), 450);
+  }
+
+  function pad2(n){ return n.toString().padStart(2,'0'); }
+
+  document.getElementById('hddValMinus').onclick = () => { writeVal = Math.max(0, writeVal - 1); document.getElementById('hddValDisplay').textContent = writeVal; };
+  document.getElementById('hddValPlus').onclick  = () => { writeVal = Math.min(999, writeVal + 1); document.getElementById('hddValDisplay').textContent = writeVal; };
+
+  document.getElementById('hddWSecMinus').onclick = () => { writeSector = (writeSector + N_SECTORS - 1) % N_SECTORS; document.getElementById('hddWSecDisplay').textContent = pad2(writeSector); };
+  document.getElementById('hddWSecPlus').onclick  = () => { writeSector = (writeSector + 1) % N_SECTORS; document.getElementById('hddWSecDisplay').textContent = pad2(writeSector); };
+
+  document.getElementById('hddRSecMinus').onclick = () => { readSector = (readSector + N_SECTORS - 1) % N_SECTORS; document.getElementById('hddRSecDisplay').textContent = pad2(readSector); };
+  document.getElementById('hddRSecPlus').onclick  = () => { readSector = (readSector + 1) % N_SECTORS; document.getElementById('hddRSecDisplay').textContent = pad2(readSector); };
+
+  document.getElementById('hddWriteBtn').onclick = () => {
+    spinDiskTo(writeSector);
+    const wasFilled = sectors[writeSector] !== null;
+    setTimeout(() => {
+      sectors[writeSector] = writeVal;
+      render();
+      flash(writeSector);
+      status.textContent = wasFilled
+        ? `sector ${pad2(writeSector)}: se sobrescribió el valor anterior en el mismo lugar físico.`
+        : `sector ${pad2(writeSector)}: dato nuevo escrito directamente ahí.`;
+    }, 400);
+  };
+
+  document.getElementById('hddReadBtn').onclick = () => {
+    spinDiskTo(readSector);
+    setTimeout(() => {
+      flash(readSector);
+      const v = sectors[readSector];
+      readout.textContent = v === null ? `sector ${pad2(readSector)}: vacío` : `sector ${pad2(readSector)} → ${v}`;
+    }, 400);
+  };
+
+  // estado inicial de ejemplo
+  sectors[3] = 77;
+  render();
+  spinDiskTo(3);
+})();
+
+/* =========================================================
+   SSD — bloques + páginas + tabla FTL + garbage collection
+   ========================================================= */
+(function(){
+  const N_BLOCKS = 3;
+  const PAGES_PER_BLOCK = 6;
+  const N_SLOTS = 6;
+
+  // pages[i] = { state: 'free'|'valid'|'stale', value, slot }
+  const pages = [];
+  for (let i = 0; i < N_BLOCKS * PAGES_PER_BLOCK; i++){
+    pages.push({ state: 'free', value: null, slot: null });
+  }
+  const ftl = new Array(N_SLOTS).fill(null); // slot -> índice físico
+
+  let writeVal = 58;
+  let writeSlot = 0;
+  let readSlot = 0;
+
+  const blocksWrap = document.getElementById('ssdBlocks');
+  const readout = document.getElementById('ssdReadout');
+  const status = document.getElementById('ssdStatus');
+  const writeBtn = document.getElementById('ssdWriteBtn');
+
+  const blockEls = [];
+  for (let b = 0; b < N_BLOCKS; b++){
+    const block = document.createElement('div');
+    block.className = 'block';
+    block.innerHTML = `<div class="block-label">bloque ${String.fromCharCode(65+b)}</div><div class="pages"></div>`;
+    blocksWrap.appendChild(block);
+    const pagesWrap = block.querySelector('.pages');
+    const rowEls = [];
+    for (let p = 0; p < PAGES_PER_BLOCK; p++){
+      const el = document.createElement('div');
+      el.className = 'page';
+      pagesWrap.appendChild(el);
+      rowEls.push(el);
+    }
+    blockEls.push(rowEls);
+  }
+
+  function render(){
+    for (let b = 0; b < N_BLOCKS; b++){
+      for (let p = 0; p < PAGES_PER_BLOCK; p++){
+        const idx = b * PAGES_PER_BLOCK + p;
+        const pg = pages[idx];
+        const el = blockEls[b][p];
+        el.className = 'page ' + (pg.state === 'valid' ? 'valid' : pg.state === 'stale' ? 'stale' : '');
+        if (pg.state === 'free'){
+          el.innerHTML = `<span>libre</span>`;
+        } else {
+          el.innerHTML = `<span>${pg.value}</span><span class="slot-tag">slot ${pg.slot}</span>`;
+        }
+      }
+    }
+    const freeCount = pages.filter(p => p.state === 'free').length;
+    writeBtn.disabled = freeCount === 0;
+
+    const ftlBody = document.getElementById('ftlBody');
+    ftlBody.innerHTML = '';
+    for (let s = 0; s < N_SLOTS; s++){
+      const idx = ftl[s];
+      const tr = document.createElement('tr');
+      if (idx === null){
+        tr.innerHTML = `<td>${s}</td><td class="empty">—</td><td class="empty">—</td><td class="empty">—</td>`;
+      } else {
+        const blockLetter = String.fromCharCode(65 + Math.floor(idx / PAGES_PER_BLOCK));
+        tr.innerHTML = `<td>${s}</td><td class="mapped">${idx}</td><td class="mapped">${blockLetter}</td><td class="mapped">${pages[idx].value}</td>`;
+      }
+      ftlBody.appendChild(tr);
+    }
+  }
+
+  function flashPage(idx){
+    const b = Math.floor(idx / PAGES_PER_BLOCK);
+    const p = idx % PAGES_PER_BLOCK;
+    const el = blockEls[b][p];
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 450);
+  }
+
+  document.getElementById('ssdValMinus').onclick = () => { writeVal = Math.max(0, writeVal - 1); document.getElementById('ssdValDisplay').textContent = writeVal; };
+  document.getElementById('ssdValPlus').onclick  = () => { writeVal = Math.min(999, writeVal + 1); document.getElementById('ssdValDisplay').textContent = writeVal; };
+
+  document.getElementById('ssdWSlotMinus').onclick = () => { writeSlot = (writeSlot + N_SLOTS - 1) % N_SLOTS; document.getElementById('ssdWSlotDisplay').textContent = writeSlot; };
+  document.getElementById('ssdWSlotPlus').onclick  = () => { writeSlot = (writeSlot + 1) % N_SLOTS; document.getElementById('ssdWSlotDisplay').textContent = writeSlot; };
+
+  document.getElementById('ssdRSlotMinus').onclick = () => { readSlot = (readSlot + N_SLOTS - 1) % N_SLOTS; document.getElementById('ssdRSlotDisplay').textContent = readSlot; };
+  document.getElementById('ssdRSlotPlus').onclick  = () => { readSlot = (readSlot + 1) % N_SLOTS; document.getElementById('ssdRSlotDisplay').textContent = readSlot; };
+
+  document.getElementById('ssdWriteBtn').onclick = () => {
+    const freeIdx = pages.findIndex(p => p.state === 'free');
+    if (freeIdx === -1){
+      status.textContent = 'no hay páginas libres — reciclá un bloque primero.';
+      return;
+    }
+    const oldIdx = ftl[writeSlot];
+    if (oldIdx !== null){
+      pages[oldIdx].state = 'stale';
+    }
+    pages[freeIdx] = { state: 'valid', value: writeVal, slot: writeSlot };
+    ftl[writeSlot] = freeIdx;
+    render();
+    flashPage(freeIdx);
+    const blockLetter = String.fromCharCode(65 + Math.floor(freeIdx / PAGES_PER_BLOCK));
+    status.textContent = oldIdx === null
+      ? `slot ${writeSlot}: escrito en una página libre del bloque ${blockLetter}.`
+      : `slot ${writeSlot}: escrito en una página nueva (bloque ${blockLetter}); la página anterior quedó como basura.`;
+  };
+
+  document.getElementById('ssdReadBtn').onclick = () => {
+    const idx = ftl[readSlot];
+    if (idx === null){
+      readout.textContent = `slot ${readSlot}: vacío`;
+      return;
+    }
+    flashPage(idx);
+    const blockLetter = String.fromCharCode(65 + Math.floor(idx / PAGES_PER_BLOCK));
+    readout.textContent = `slot ${readSlot} → ${pages[idx].value}  (bloque ${blockLetter}, vía tabla FTL)`;
+  };
+
+  document.getElementById('ssdGcBtn').onclick = () => {
+    // elegir el bloque con más páginas "stale"
+    let bestBlock = -1, bestStale = 0;
+    for (let b = 0; b < N_BLOCKS; b++){
+      let staleCount = 0;
+      for (let p = 0; p < PAGES_PER_BLOCK; p++){
+        if (pages[b*PAGES_PER_BLOCK + p].state === 'stale') staleCount++;
+      }
+      if (staleCount > bestStale){ bestStale = staleCount; bestBlock = b; }
+    }
+    if (bestBlock === -1){
+      status.textContent = 'no hay basura acumulada todavía — no hace falta reciclar nada.';
+      return;
+    }
+
+    // reubicar páginas válidas de ese bloque antes de borrarlo
+    let relocated = 0;
+    for (let p = 0; p < PAGES_PER_BLOCK; p++){
+      const idx = bestBlock * PAGES_PER_BLOCK + p;
+      if (pages[idx].state === 'valid'){
+        const freeIdx = pages.findIndex((pg, i) =>
+          pg.state === 'free' && Math.floor(i / PAGES_PER_BLOCK) !== bestBlock
+        );
+        if (freeIdx !== -1){
+          pages[freeIdx] = { state: 'valid', value: pages[idx].value, slot: pages[idx].slot };
+          ftl[pages[idx].slot] = freeIdx;
+          relocated++;
+        }
+      }
+    }
+    // borrar el bloque completo (única forma de limpiar las páginas stale)
+    for (let p = 0; p < PAGES_PER_BLOCK; p++){
+      const idx = bestBlock * PAGES_PER_BLOCK + p;
+      pages[idx] = { state: 'free', value: null, slot: null };
+    }
+
+    render();
+    const blockLetter = String.fromCharCode(65 + bestBlock);
+    status.textContent = `bloque ${blockLetter} reciclado: ${relocated} página(s) válida(s) reubicadas, ${PAGES_PER_BLOCK} páginas liberadas.`;
+  };
+
+  // estado inicial de ejemplo
+  pages[2] = { state: 'valid', value: 58, slot: 0 };
+  ftl[0] = 2;
+  render();
+})();
+</script>
+
+</body>
+</html>
